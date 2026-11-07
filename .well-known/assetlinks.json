@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.eclipsim.gpsstatus2",
+      "sha256_cert_fingerprints": [
+        "C6:DD:CB:7B:11:14:EA:83:21:E0:0D:79:E4:13:C5:BC:EF:8B:79:6E:12:63:68:6B:F6:09:FF:E5:D0:7B:1F:4E"
+      ]
+    }
+  }
+]
