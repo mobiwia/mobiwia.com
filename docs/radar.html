@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="apple-itunes-app" content="app-id=1198499960">
+<script>
+  // Safari reads the Smart App Banner while parsing, so app-argument has to be
+  // in place before the head is done. It hands this link to the installed app.
+  document.querySelector('meta[name="apple-itunes-app"]').content =
+    'app-id=1198499960, app-argument=' + location.href;
+</script>
+<title>Shared location · GPS Status</title>
+<link rel="icon" href="img/favicon.ico">
+<style>
+  :root {
+    --bg: #f4f5fb; --card: #fff; --text: #1b1d29; --muted: #5d6175;
+    --accent: #3f51b5; --on-accent: #fff; --border: #dde0ee;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #11131c; --card: #1b1e2b; --text: #eceef7; --muted: #a2a6bb;
+      --accent: #8c9eff; --on-accent: #11131c; --border: #2c3044;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 32rem; margin: 0 auto; padding: 24px 16px 40px; }
+  header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+  header img { width: 48px; height: 48px; border-radius: 12px; }
+  header b { display: block; font-size: 1.1rem; }
+  header span { color: var(--muted); font-size: .9rem; }
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden;
+  }
+  .place { padding: 16px; }
+  .place h1 { margin: 0 0 4px; font-size: 1.35rem; overflow-wrap: anywhere; }
+  .coords { font-variant-numeric: tabular-nums; color: var(--muted); }
+  iframe { display: block; width: 100%; height: 240px; border: 0; }
+  .maps { display: flex; gap: 16px; padding: 0 16px 16px; flex-wrap: wrap; }
+  .maps a { color: var(--accent); text-decoration: none; font-weight: 600; }
+  .actions { display: grid; gap: 12px; margin-top: 20px; }
+  .btn {
+    display: block; text-align: center; padding: 14px 16px; border-radius: 12px;
+    font-weight: 600; text-decoration: none; border: 1px solid var(--accent);
+    color: var(--accent);
+  }
+  .btn.primary { background: var(--accent); color: var(--on-accent); }
+  .hint { color: var(--muted); font-size: .9rem; margin-top: 16px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <img src="img/gpsstatus.png" alt="">
+    <div><b>GPS Status &amp; Toolbox</b><span>Navigate to a shared location</span></div>
+  </header>
+
+  <div class="card" id="place" hidden>
+    <div class="place">
+      <h1 id="name">Shared location</h1>
+      <div class="coords" id="coords"></div>
+    </div>
+    <iframe id="map" title="Map" loading="lazy"></iframe>
+    <div class="maps" style="padding-top:12px">
+      <a id="google" href="#">Google Maps</a>
+      <a id="apple" href="#">Apple Maps</a>
+    </div>
+  </div>
+
+  <div class="card" id="invalid" hidden>
+    <div class="place">
+      <h1>No location in this link</h1>
+      <div class="coords">The link is incomplete. Ask the sender to share it again.</div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <a class="btn primary" id="open-android" hidden>Open in GPS Status</a>
+    <a class="btn" id="play" href="https://play.google.com/store/apps/details?id=com.eclipsim.gpsstatus2">Get it on Google Play</a>
+    <a class="btn" id="appstore" href="https://apps.apple.com/app/id1198499960">Download on the App Store</a>
+  </div>
+  <p class="hint" id="hint">With GPS Status installed, this link opens the app
+    and points its Radar at the location.</p>
+</main>
+<script>
+(function () {
+  var PKG = 'com.eclipsim.gpsstatus2';
+  var PLAY = 'https://play.google.com/store/apps/details?id=' + PKG;
+  var COORDS = /(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/;
+
+  // Same formats as the app's deep-link parser: ?lat=&lon=&name= from
+  // current versions, ?q=LAT,LON(NAME) / ?daddr= from older ones.
+  var p = new URLSearchParams(location.search);
+  var lat = parseFloat(p.get('lat'));
+  var lon = parseFloat(p.get('lon'));
+  var name = p.get('name');
+  if (!isFinite(lat) || !isFinite(lon)) {
+    var q = p.get('q') || p.get('daddr') || '';
+    var m = q.match(COORDS);
+    if (m) { lat = parseFloat(m[1]); lon = parseFloat(m[2]); }
+    var n = q.match(/\((.*?)\)/);
+    if (!name && n && n[1].trim()) name = n[1].trim();
+  }
+  var valid = isFinite(lat) && isFinite(lon) &&
+    Math.abs(lat) <= 90 && Math.abs(lon) <= 180;
+
+  var ua = navigator.userAgent;
+  var android = /Android/i.test(ua);
+  var ios = /iPhone|iPad|iPod/.test(ua) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+  if (valid) {
+    var ll = lat + ',' + lon;
+    var label = name || 'Shared location';
+    document.getElementById('place').hidden = false;
+    document.getElementById('name').textContent = label;
+    document.getElementById('coords').textContent =
+      Math.abs(lat).toFixed(5) + '°' + (lat < 0 ? 'S' : 'N') + '  ' +
+      Math.abs(lon).toFixed(5) + '°' + (lon < 0 ? 'W' : 'E');
+    var d = 0.01;
+    document.getElementById('map').src =
+      'https://www.openstreetmap.org/export/embed.html?bbox=' +
+      [lon - d, lat - d, lon + d, lat + d].join(',') +
+      '&layer=mapnik&marker=' + ll;
+    document.getElementById('google').href =
+      'https://www.google.com/maps/search/?api=1&query=' + ll;
+    document.getElementById('apple').href =
+      'https://maps.apple.com/?q=' + encodeURIComponent(label) + '&ll=' + ll;
+  } else {
+    document.getElementById('invalid').hidden = false;
+  }
+
+  // Reaching this page on Android means the link was not opened by the app:
+  // it is not installed, or an older install has not verified mobiwia.com.
+  // The intent opens the app if present and falls back to Google Play.
+  if (android) {
+    var open = document.getElementById('open-android');
+    open.href = 'intent://mobiwia.com/radar' + location.search +
+      '#Intent;scheme=https;package=' + PKG +
+      ';S.browser_fallback_url=' + encodeURIComponent(PLAY) + ';end';
+    open.hidden = !valid;
+    document.getElementById('appstore').hidden = true;
+  } else if (ios) {
+    document.getElementById('play').hidden = true;
+    document.getElementById('appstore').classList.add('primary');
+    document.getElementById('hint').textContent =
+      'With GPS Status installed, tap Open in the banner at the top of Safari.';
+  }
+})();
+</script>
+</body>
+</html>

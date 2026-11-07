@@ -1,0 +1,10 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["8V99328425.com.eclipsim.gpsstatus2"],
+        "components": [{ "/": "/radar*" }]
+      }
+    ]
+  }
+}

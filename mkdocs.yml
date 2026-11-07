@@ -24,6 +24,10 @@ site_description: MobiWIA Tools
 site_author: MobiWIA Ltd.
 site_url: https://mobiwia.com
 
+# MkDocs skips dot-directories; the app-link association files must be served.
+exclude_docs: |
+  !.well-known/
+
 # Repository
 #repo_name: mobiwia/mobiwia-web
 #repo_url: https://github.com/mobiwia/mobiwia-web
