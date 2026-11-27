@@ -35,28 +35,14 @@ exclude_docs: |
 # Copyright
 copyright: 'Copyright &copy; 2012 - 2020 MobiWIA Ltd.'
 
-theme: material
-# Theme directory
-#theme_dir: mobiwia_theme
-
-# Options
 theme:
   name: material
-
-  # 404 page
-  static_templates:
-    - 404.html
-
-  # Don't include MkDocs' JavaScript
-  include_search_page: false
-  search_index_only: true
-
   language: en
-  feature:
-    - tabs
+  features:
+    - navigation.tabs
   font:
-    text: 'Roboto Light'
-    code: 'Roboto Mono'
+    text: Roboto
+    code: Roboto Mono
   palette:
     primary: indigo
     accent: indigo
@@ -83,7 +69,8 @@ markdown_extensions:
   - pymdownx.critic
   - pymdownx.details
   - pymdownx.emoji:
-      emoji_generator: !!python/name:pymdownx.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.inlinehilite
   - pymdownx.magiclink
   - pymdownx.mark
@@ -124,8 +111,3 @@ nav:
     - About Us: company/index.md
     - License: company/eula.md
     - Privacy Policy: company/privacy.md
-
-# Google Analytics
-google_analytics:
-  - 'UA-32843483-1'
-  - 'auto'
